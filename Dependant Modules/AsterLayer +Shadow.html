@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AsterLayer: Photo Overlay and Linear Burn Software</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        #container {
+            display: flex;
+            justify-content: space-around;
+        }
+        .image-container {
+            position: relative;
+            width: fit-content;
+            margin-top: 20px;
+        }
+        img {
+            display: block; /* Removes extra space below the image */
+            max-width: 600px; /* Limits image width */
+        }
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Allows interaction with the underlying image */
+        }
+        label {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2>AsterLayer: Photo Overlay and Linear Burn Software</h2>
+    <input type="file" id="image-input" accept="image/*">
+    <br><br>
+    <input type="text" id="color-input" placeholder="Enter hex color or use picker">
+    <input type="color" id="color-picker">
+    <br><br>
+    <label for="intensity-slider">Color Intensity:</label>
+    <input type="range" id="intensity-slider" min="0" max="1" step="0.01" value="0.5">
+    <br>
+    <label for="transparency-slider">Transparency:</label>
+    <input type="range" id="transparency-slider" min="0" max="1" step="0.01" value="0.5">
+    <br>
+    <label for="shadow-x-slider">Shadow X Offset:</label>
+    <input type="range" id="shadow-x-slider" min="-50" max="50" step="1" value="0">
+    <br>
+    <label for="shadow-y-slider">Shadow Y Offset:</label>
+    <input type="range" id="shadow-y-slider" min="-50" max="50" step="1" value="0">
+    <br>
+    <label for="overlay-checkbox">Overlay:</label>
+    <input type="checkbox" id="overlay-checkbox" checked>
+    <label for="shadow-checkbox">Drop Shadow:</label>
+    <input type="checkbox" id="shadow-checkbox" checked>
+    <br>
+    <div id="container">
+        <div class="image-container" id="original-container">
+            <img id="uploaded-image" src="" alt="Original Image">
+        </div>
+        <div class="image-container" id="edited-container">
+            <img id="edited-image" src="" alt="Edited Image">
+        </div>
+    </div>
+    <br>
+    <label for="file-name">File Name:</label>
+    <input type="text" id="file-name" placeholder="Enter file name">
+    <script>
+        window.addEventListener('load', function() {
+            const imageInput = document.getElementById('image-input');
+            const colorInput = document.getElementById('color-input');
+            const colorPicker = document.getElementById('color-picker');
+            const intensitySlider = document.getElementById('intensity-slider');
+            const transparencySlider = document.getElementById('transparency-slider');
+            const shadowXSlider = document.getElementById('shadow-x-slider');
+            const shadowYSlider = document.getElementById('shadow-y-slider');
+            const overlayCheckbox = document.getElementById('overlay-checkbox');
+            const shadowCheckbox = document.getElementById('shadow-checkbox');
+            const originalContainer = document.getElementById('original-container');
+            const editedContainer = document.getElementById('edited-container');
+            let overlayDiv = null;
+
+            function updateImage() {
+                if (!overlayDiv) {
+                    overlayDiv = document.createElement('div');
+                    overlayDiv.className = 'overlay';
+                    editedContainer.appendChild(overlayDiv);
+                }
+                overlayDiv.style.display = overlayCheckbox.checked ? 'block' : 'none';
+                overlayDiv.style.backgroundColor = colorInput.value || colorPicker.value;
+                overlayDiv.style.opacity = parseFloat(transparencySlider.value) * parseFloat(intensitySlider.value);
+                overlayDiv.style.boxShadow = shadowCheckbox.checked ? `${shadowXSlider.value}px ${shadowYSlider.value}px 10px rgba(0,0,0,0.5)` : 'none';
+            }
+
+            imageInput.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const originalImg = document.getElementById('uploaded-image');
+                    const editedImg = document.getElementById('edited-image');
+                    originalImg.src = e.target.result;
+                    editedImg.src = e.target.result; // Set source for edited image
+                    updateImage(); // Apply initial settings when image loads
+                };
+                reader.readAsDataURL(file);
+            });
+
+            [colorInput, colorPicker, intensitySlider, transparencySlider, shadowXSlider, shadowYSlider, overlayCheckbox, shadowCheckbox].forEach(item => {
+                item.addEventListener('input', updateImage);
+            });
+        });
+    </script>
+</body>
+</html>
